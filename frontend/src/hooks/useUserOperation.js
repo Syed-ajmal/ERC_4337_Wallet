@@ -53,8 +53,11 @@ function packUserOperation(userOp, deployed) {
 
 export function useUserOperation() {
   const { address: ownerAddress } = useAppKitAccount({ namespace: 'eip155' })
-  const { data: walletClient } = useWalletClient()
-  const publicClient = usePublicClient()
+  const {
+    data: walletClient,
+    refetch: refetchWalletClient,
+  } = useWalletClient({ chainId: SEPOLIA_CHAIN_ID })
+  const publicClient = usePublicClient({ chainId: SEPOLIA_CHAIN_ID })
   const {
     estimate,
     getGasPrice,
@@ -92,13 +95,17 @@ export function useUserOperation() {
       if (!isAddress(smartWalletAddress) || !isAddress(ownerAddress)) {
         throw new Error('Connect your owner wallet before preparing a transaction.')
       }
-      if (!walletClient || !publicClient) {
-        throw new Error('Wallet connection is not ready yet. Try again in a moment.')
+      if (!publicClient) {
+        throw new Error('Sepolia network client is not ready yet. Try again in a moment.')
       }
-      if (walletClient.chain?.id !== SEPOLIA_CHAIN_ID) {
+      const signingClient = walletClient ?? (await refetchWalletClient()).data
+      if (!signingClient) {
+        throw new Error('Could not access your connected wallet. Reconnect it and try again.')
+      }
+      if (signingClient.chain?.id !== SEPOLIA_CHAIN_ID) {
         throw new Error('Switch your connected wallet to Sepolia before sending.')
       }
-      if (walletClient.account.address.toLowerCase() !== ownerAddress.toLowerCase()) {
+      if (signingClient.account.address.toLowerCase() !== ownerAddress.toLowerCase()) {
         throw new Error('The connected signing wallet does not match the selected owner wallet.')
       }
 
@@ -160,23 +167,27 @@ export function useUserOperation() {
       setPhase('error')
       throw prepareError
     }
-  }, [estimate, getGasPrice, ownerAddress, publicClient, walletClient])
+  }, [estimate, getGasPrice, ownerAddress, publicClient, refetchWalletClient, walletClient])
 
   const confirmSend = useCallback(async () => {
     setError('')
     setPhase('signing')
 
     try {
-      if (!preparedOperation || !walletClient || !publicClient || !ownerAddress) {
+      if (!preparedOperation || !publicClient || !ownerAddress) {
         throw new Error('Review a transaction before confirming it.')
+      }
+      const signingClient = walletClient ?? (await refetchWalletClient()).data
+      if (!signingClient) {
+        throw new Error('Could not access your connected wallet. Reconnect it and try again.')
       }
       if (preparedOperation.ownerAddress.toLowerCase() !== ownerAddress.toLowerCase()) {
         throw new Error('The connected owner wallet changed. Review the transaction again.')
       }
-      if (walletClient.chain?.id !== SEPOLIA_CHAIN_ID) {
+      if (signingClient.chain?.id !== SEPOLIA_CHAIN_ID) {
         throw new Error('Switch your connected wallet to Sepolia before signing.')
       }
-      if (walletClient.account.address.toLowerCase() !== ownerAddress.toLowerCase()) {
+      if (signingClient.account.address.toLowerCase() !== ownerAddress.toLowerCase()) {
         throw new Error('The connected signing wallet does not match the selected owner wallet.')
       }
 
@@ -190,7 +201,7 @@ export function useUserOperation() {
         functionName: 'getUserOpHash',
         args: [packedOperation],
       })
-      const signature = await walletClient.signMessage({
+      const signature = await signingClient.signMessage({
         message: { raw: userOpHash },
       })
       setPhase('submitting')
@@ -211,7 +222,7 @@ export function useUserOperation() {
       setPhase('error')
       throw sendError
     }
-  }, [ownerAddress, preparedOperation, publicClient, submit, walletClient])
+  }, [ownerAddress, preparedOperation, publicClient, refetchWalletClient, submit, walletClient])
 
   const checkStatus = useCallback(async () => {
     try {

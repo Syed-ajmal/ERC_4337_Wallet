@@ -186,7 +186,6 @@ function WalletDashboard() {
                 <button className="mt-4 w-full rounded-xl bg-[#6d3be7] px-4 py-3 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50" disabled={phase === 'estimating' || phase === 'signing' || phase === 'submitting' || !recipient || !amount || Number(amount) <= 0} onClick={phase === 'ready' ? submitSend : reviewSend} type="button">{phase === 'estimating' ? 'Estimating network fee…' : phase === 'ready' ? 'Confirm with owner wallet' : 'Review transaction'}</button>
               </>}
               {phase === 'pending' && <><p className="mt-3 break-all text-[10px] text-[#817b83]">UserOperation: {userOperationHash}</p><button className="mt-3 w-full rounded-xl border border-[#e4d9f0] px-4 py-3 text-xs font-semibold text-[#6d3be7]" onClick={checkStatus} type="button">Check status</button></>}
-              {phase === 'error' && sendError && <p className="mt-3 rounded-lg bg-[#fff0f0] p-3 text-[11px] leading-5 text-[#a34141]">{sendError}</p>}
             </>}
           </>}
         </section>
