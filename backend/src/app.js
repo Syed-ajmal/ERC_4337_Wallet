@@ -7,6 +7,10 @@ import userOperationRouter from "./routes/userOperation.routes.js";
 
 const app = express();
 
+app.get("/", (_req, res) => {
+  res.status(200).json({ success: true, message: "ERC-4337 wallet API is running" });
+});
+
 app.use(
   cors({
     origin: [
