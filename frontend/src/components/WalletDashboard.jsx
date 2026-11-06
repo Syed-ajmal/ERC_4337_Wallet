@@ -24,11 +24,13 @@ function WalletDashboard() {
     error,
     isLoading,
     isActivityLoading,
+    isRefreshing,
     walletDetailsError,
     transactionsError,
     copied,
     copyError,
     retry,
+    refreshWalletData,
     copyAddress,
   } = useWalletPrediction()
   const {
@@ -134,8 +136,8 @@ function WalletDashboard() {
 
       <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto]">
         <div className="rounded-xl border border-[#eae6ed] bg-white p-4 sm:p-5">
-          <div className="font-mono text-[9px] font-semibold tracking-[.8px] text-[#958aa1]">TOTAL BALANCE</div>
-          <div className="mt-2 flex items-baseline gap-2"><strong className="font-[Manrope,sans-serif] text-3xl font-bold tracking-[-1.5px] text-[#30243b]">{isActivityLoading && !walletDetails ? 'Loading…' : formatEth(balance)}</strong><span className="text-sm font-semibold text-[#766b81]">ETH</span></div>
+          <div className="flex items-center justify-between gap-3"><div className="font-mono text-[9px] font-semibold tracking-[.8px] text-[#958aa1]">TOTAL BALANCE</div><button aria-label="Refresh balance and activity" className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-[#e4d9f0] bg-white text-[#6d3be7] transition hover:bg-[#f7f2fc] disabled:cursor-not-allowed disabled:opacity-50" disabled={isRefreshing || isActivityLoading} onClick={refreshWalletData} title="Refresh balance and activity" type="button"><svg aria-hidden="true" className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24"><path d="M20 7v5h-5M4.8 9a7.5 7.5 0 0 1 13-2L20 12M4 17v-5h5m10.2 3a7.5 7.5 0 0 1-13 2L4 12" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" /></svg></button></div>
+          <div aria-live="polite" className="mt-2 flex items-baseline gap-2"><strong className="font-[Manrope,sans-serif] text-3xl font-bold tracking-[-1.5px] text-[#30243b]">{isActivityLoading && !walletDetails ? 'Loading…' : formatEth(balance)}</strong><span className="text-sm font-semibold text-[#766b81]">ETH</span></div>
           <div className="mt-1 text-[11px] text-[#93899e]">≈ $ — ETH price not loaded</div>
           {walletDetailsError && <p className="mt-2 text-[10px] text-[#bd5555]">Balance unavailable: {walletDetailsError}</p>}
         </div>

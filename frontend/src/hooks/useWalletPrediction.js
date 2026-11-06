@@ -14,6 +14,7 @@ export function useWalletPrediction() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isActivityLoading, setIsActivityLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [walletDetailsError, setWalletDetailsError] = useState("");
   const [transactionsError, setTransactionsError] = useState("");
   const [retryCount, setRetryCount] = useState(0);
@@ -90,6 +91,36 @@ export function useWalletPrediction() {
     setRetryCount((count) => count + 1);
   }, []);
 
+  const refreshWalletData = useCallback(async () => {
+    const walletAddress = prediction?.smartWalletAddress;
+    if (!walletAddress) return;
+
+    setIsRefreshing(true);
+    setWalletDetailsError("");
+    setTransactionsError("");
+
+    try {
+      const [detailsResult, transactionsResult] = await Promise.allSettled([
+        getWalletDetails(walletAddress),
+        getWalletTransactions(walletAddress, 1, 5),
+      ]);
+
+      if (detailsResult.status === "fulfilled") {
+        setWalletDetails(detailsResult.value);
+      } else {
+        setWalletDetailsError(detailsResult.reason.message);
+      }
+
+      if (transactionsResult.status === "fulfilled") {
+        setTransactions(transactionsResult.value.transactions || []);
+      } else {
+        setTransactionsError(transactionsResult.reason.message);
+      }
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [prediction]);
+
   const copyAddress = useCallback(async () => {
     if (!prediction?.smartWalletAddress) return;
 
@@ -115,11 +146,13 @@ export function useWalletPrediction() {
     error,
     isLoading,
     isActivityLoading,
+    isRefreshing,
     walletDetailsError,
     transactionsError,
     copied,
     copyError,
     retry,
+    refreshWalletData,
     copyAddress,
   };
 }
