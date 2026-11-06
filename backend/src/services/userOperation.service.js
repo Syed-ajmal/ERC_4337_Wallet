@@ -88,3 +88,24 @@ export async function getUserOperationStatus(userOpHash) {
     throw new Error(`Failed to get UserOperation status: ${message}`);
   }
 }
+
+
+export async function getUserOperationGasPrice() {
+  try {
+    const response = await axios.post(PIMLICO_URL, {
+      jsonrpc: "2.0",
+      id: 1,
+      method: "pimlico_getUserOperationGasPrice",
+      params: [],
+    });
+
+    if (response.data.error || !response.data.result) {
+      throw new Error(response.data.error?.message || "Pimlico returned no gas prices");
+    }
+
+    return response.data.result;
+  } catch (error) {
+    const message = error.response?.data?.error?.message || error.message;
+    throw new Error(`Failed to retrieve UserOperation gas prices: ${message}`, { cause: error });
+  }
+}

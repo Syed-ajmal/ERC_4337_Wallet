@@ -1,8 +1,8 @@
-import React from 'react'
-import HomePage from './pages/Home_page.jsx'
+import { BrowserRouter } from 'react-router-dom'
+import AppRoutes from './app.routes.jsx'
 
 function App() {
-  return <HomePage />
+  return <BrowserRouter><AppRoutes /></BrowserRouter>
 }
 
 export default App

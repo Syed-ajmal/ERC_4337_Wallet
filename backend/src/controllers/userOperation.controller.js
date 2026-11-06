@@ -3,6 +3,7 @@ import {
   estimateUserOperationGas,
   sendUserOperation,
   getUserOperationStatus,
+  getUserOperationGasPrice,
 } from "../services/userOperation.service.js";
 
 export async function estimateGas(req, res) {
@@ -91,5 +92,16 @@ export async function getUserOpStatus(req, res) {
       success: false,
       message: "Failed to retrieve UserOperation status",
     });
+  }
+}
+
+
+export async function getGasPrice(req, res) {
+  try {
+    const gasPrices = await getUserOperationGasPrice();
+    return res.status(200).json({ success: true, data: gasPrices });
+  } catch (error) {
+    console.error("UserOperation gas price error:", error.message);
+    return res.status(500).json({ success: false, message: "Failed to retrieve UserOperation gas prices" });
   }
 }

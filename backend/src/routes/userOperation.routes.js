@@ -4,6 +4,7 @@ import * as userOperationController from "../controllers/userOperation.controlle
 const userOperationRouter = Router();
 
 userOperationRouter.post("/estimate", userOperationController.estimateGas);
+userOperationRouter.get("/gas-price", userOperationController.getGasPrice);
 
 userOperationRouter.post("/send", userOperationController.sendUserOp);
 
